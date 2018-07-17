@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>房价预测系统</title>
+    <script src="https://cdn.bootcss.com/jquery/1.10.0/jquery.min.js"></script>
+</head>
+<style>
+.forecast
+{
+    margin : 10px 0px 0px 0px;
+    background: #ADD8E6;
+    font-family: sans-serif;
+    height:180px;
+    width:610px;
+}
+.res
+{
+    background:#00CED1;
+    height:180px;
+    width:610px;
+}
+</style>
+<script>
+    $(document).ready(function(){
+        $("#collect_data").click(function(){
+            $("#res").html("正在采集数据.......")
+            $.get("http://www.ml.com/program3/collect_data.py",function(data,status){ 
+                $('#res').append("采集数据成功")          
+                $("#res").append(data)
+                $("#export_data").attr('disabled',false);
+                $("#collect_data").attr('disabled',true);
+            })
+        })
+        $("#export_data").click(function(){
+            $("#res").html("正在从数据库中导出数据.......")
+            $.get("http://www.ml.com/program3/export_data.py",function(data,status){
+                str = ''                
+                $("#res").append("数据导出完成！")
+                $("#manage_data").attr('disabled',false);  
+                $("#export_data").attr('disabled',true);     
+            })
+        })
+        $("#manage_data").click(function(){
+            $("#res").html("正在加工数据.......")
+            $.get("http://www.ml.com/program3/manage_data.py",function(data,status){ 
+                $('#res').append("数据加工成功")
+                $("#manage_data").attr('disabled',true);  
+                $("#area_forecast").attr('disabled',false);
+                $("#get_area_price").attr('disabled',false);
+                $("#get_num_area_price").attr('disabled',false);        
+            })
+        })
+        $.ajaxSetup({
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+          });
+        $("#area_forecast").click(function(){
+            $("#res").html("预测中.......")
+            var val=$("#select_area").val();
+            $.ajax({
+                url:'http://www.ml.com/program3/area_forecast.py',
+                type:'POST',
+                data:{
+                    name:val
+                },
+                success:function(data){
+                    $("#res").html(data)
+                }
+            })               
+        })  
+        $("#get_area_price").click(function(){
+            $("#res").html("预测中.......")
+            var val=$("#area").val();
+            $.ajax({
+                url:'http://www.ml.com/program3/size_forecast.py',
+                type:'POST',
+                data:{
+                    name:val
+                },
+                success:function(data){
+                    $("#res").html(data)
+                }
+            })               
+        }) 
+        $("#get_num_area_price").click(function(){
+            $("#res").html("预测中.......")
+            var number=$("#roomnumber").val()
+            var quyu=$("#area2").val()      
+            alert(quyu+number)
+            $.ajax({
+                url:'http://www.ml.com/program3/size_number_forecast.py',
+                type:'POST',
+                data:{
+                    name:quyu,
+                    num:number
+                },
+                success:function(data){
+                    $("#res").html(data)
+                }
+            })               
+        })
+    })
+</script>
+<body>
+        <input type="button" value="采集数据" style ="width:200px;height:30px" id=collect_data>
+        <input type="button" value="导出数据" style ="width:200px;height:30px" disabled ="disabled" id=export_data>
+        <input type="button" value="加工数据" style ="width:200px;height:30px" disabled ="disabled" id=manage_data>
+    <div  id=forecast class = "forecast">
+        <h>预测:</h></br></br>
+        <h>区域:</h>
+        <select name ="area" id =select_area>
+                <option value ="tianxin">天心区</option>
+                <option value ="furong">芙蓉区</option>
+                <option value="kaifu">开福区</option>
+                <option value="yuhua">雨花区</option>
+                <option value ="yuelu">岳麓区</option>
+        </select>
+        <input type="submit" value="预测" disabled ="disabled" id=area_forecast />
+        </br></br>
+        <h>面积:</h>   
+        <input type="text" id=area />
+        <input type="submit" id=get_area_price disabled ="disabled"  value="预测" />
+        </br></br>      
+        <h>面积:</h>
+        <input type="text" id=area2 />    
+        <h>数量：</h>
+        <input type="text" id=roomnumber />    
+        <input type="submit" id=get_num_area_price disabled ="disabled" value="预测" />
+    </div>
+    <div id=res class ="res"></div> 
+</body>
+</html>
